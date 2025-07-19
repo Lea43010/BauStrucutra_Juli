@@ -28,7 +28,7 @@ import {
   Plus
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
-import type { Project } from "../../shared/schema";
+import type { Project } from "../../../shared/schema";
 
 export default function Dashboard() {
   const { user } = useAuth();

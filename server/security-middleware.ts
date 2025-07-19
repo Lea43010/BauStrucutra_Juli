@@ -81,19 +81,19 @@ export function validateResourceOwnership(resourceType: 'project' | 'customer' |
       switch (resourceType) {
         case 'project':
           const project = await storage.getProject(resourceId);
-          hasAccess = project && project.userId === userId;
+          hasAccess = !!(project && project.userId === userId);
           break;
         case 'customer':
           const customer = await storage.getCustomer(resourceId);
-          hasAccess = customer && customer.userId === userId;
+          hasAccess = !!(customer && customer.userId === userId);
           break;
         case 'company':
           const company = await storage.getCompany(resourceId);
-          hasAccess = company && company.userId === userId;
+          hasAccess = !!(company && company.userId === userId);
           break;
         case 'person':
           const person = await storage.getPerson(resourceId);
-          hasAccess = person && person.userId === userId;
+          hasAccess = !!(person && person.userId === userId);
           break;
       }
 

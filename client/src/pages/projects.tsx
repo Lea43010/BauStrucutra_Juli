@@ -19,7 +19,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { ArrowLeft, Plus, Search, Filter, FolderOpen, Building, Users, Upload } from "lucide-react";
 import { Link } from "wouter";
-import type { Project, Customer, Company } from "../../shared/schema";
+import type { Project, Customer, Company } from "../../../shared/schema";
 
 const projectFormSchema = z.object({
   name: z.string().min(1, "Projektname ist erforderlich"),

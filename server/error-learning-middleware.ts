@@ -209,7 +209,7 @@ export function errorLearningAnalytics() {
     if (req.errorContext) {
       req.errorContext = {
         ...req.errorContext,
-        userAgent,
+        // userAgent,
         referer,
         isMobile,
         ip: req.ip

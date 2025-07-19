@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useForm } from "react-hook-form";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Textarea } from "../components/ui/textarea";
 import { Label } from "../components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "../components/ui/form";
 import { useToast } from "../hooks/use-toast";
 import { ArrowLeft, Save, MapPin } from "lucide-react";
 import { Link } from "wouter";
-import type { Project } from "../../shared/schema";
+import type { Project } from "../../../shared/schema";
 
 export default function ProjectEdit() {
   const { id } = useParams();
@@ -18,10 +20,24 @@ export default function ProjectEdit() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  const form = useForm({
+    defaultValues: {
+      name: "",
+      description: "",
+      status: "planning" as "planning" | "active" | "completed" | "cancelled",
+      budget: "",
+      startDate: "",
+      endDate: "",
+      latitude: "",
+      longitude: "",
+      completionPercentage: 0,
+    }
+  });
+
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    status: "planning" as const,
+    status: "planning" as "planning" | "active" | "completed" | "cancelled",
     budget: "",
     startDate: "",
     endDate: "",
@@ -89,6 +105,10 @@ export default function ProjectEdit() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     updateProjectMutation.mutate(formData);
+  };
+
+  const onSubmit = (data: any) => {
+    updateProjectMutation.mutate(data);
   };
 
   if (isLoading) {

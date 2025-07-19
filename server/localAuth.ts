@@ -21,7 +21,11 @@ function generateSecurePassword(): string {
 
 declare global {
   namespace Express {
-    interface User extends User {}
+    interface User {
+      id: string;
+      email?: string;
+      role: string;
+    }
   }
 }
 
@@ -152,7 +156,7 @@ export async function setupLocalAuth(app: Express) {
   // Auth routes
   app.post("/api/auth/login", (req, res, next) => {
     console.log('📧 Login request received for:', req.body.email);
-    passport.authenticate("local", (err, user, info) => {
+    passport.authenticate("local", (err: any, user: any, info: any) => {
       if (err) {
         console.error('❌ Passport authentication error:', err);
         return next(err);
@@ -263,7 +267,7 @@ export async function setupLocalAuth(app: Express) {
               to: email,
               firstName: firstName,
               role: "user",
-              id: user.id
+              userId: user.id
             });
             
             console.log(`✅ Willkommens-E-Mail erfolgreich versendet (Versuch ${attempt}):`, emailResponse.messageId);
@@ -282,7 +286,7 @@ export async function setupLocalAuth(app: Express) {
         }
         
         if (!emailSent) {
-          throw new Error(`E-Mail-Versand nach 3 Versuchen fehlgeschlagen: ${emailError?.message || 'Unbekannter Fehler'}`);
+          throw new Error(`E-Mail-Versand nach 3 Versuchen fehlgeschlagen: ${emailError instanceof Error ? emailError.message : 'Unbekannter Fehler'}`);
         }
         
       } catch (emailError) {
@@ -389,7 +393,7 @@ export async function setupLocalAuth(app: Express) {
         const { emailService } = await import('./emailService');
         await emailService.sendPasswordResetEmail({
           to: email,
-          firstName: user.firstName,
+          firstName: user.firstName || '',
           resetToken: resetToken,
           resetLink: `https://bau-structura.com/reset-password?token=${resetToken}&email=${encodeURIComponent(email)}`
         });

@@ -19,7 +19,7 @@ import {
   Users,
   Building2
 } from "lucide-react";
-import type { Customer } from "../../shared/schema";
+import type { Customer } from "../../../shared/schema";
 
 export default function Customers() {
   const [isCustomerDialogOpen, setIsCustomerDialogOpen] = useState(false);

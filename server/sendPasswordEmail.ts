@@ -12,7 +12,7 @@ export async function sendPasswordEmailToAeisenmann(): Promise<void> {
   try {
     // Direkte E-Mail-Nutzung mit korrekter E-Mail-Adresse
     await emailService.sendPasswordResetEmail({
-      email: 'aeisenmann@lohr.de',
+      // email: 'aeisenmann@lohr.de',
       firstName: 'A. Eisenmann',
       newPassword: newPassword,
       loginUrl: 'https://bau-structura.com/auth'

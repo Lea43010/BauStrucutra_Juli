@@ -10,7 +10,7 @@ import { Link, useLocation } from "wouter";
 import { Wrapper, Status } from "@googlemaps/react-wrapper";
 import { DirectAddressSearch } from "../components/maps/direct-address-search";
 
-import type { Project } from "../../shared/schema";
+import type { Project } from "../../../shared/schema";
 
 // Globale Variable für Drawing Mode
 let currentDrawingMode = '';

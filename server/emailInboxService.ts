@@ -27,7 +27,7 @@ interface InboxConfig {
 }
 
 class EmailInboxService {
-  private msalInstance: ConfidentialClientApplication;
+  private msalInstance: ConfidentialClientApplication | null = null;
   private config: InboxConfig;
 
   constructor() {

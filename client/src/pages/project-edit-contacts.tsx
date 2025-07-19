@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { useToast } from "../hooks/use-toast";
 import { ArrowLeft, Save, Plus, User, Building2 } from "lucide-react";
 import { Link } from "wouter";
-import type { Project, Customer } from "../../shared/schema";
+import type { Project, Customer } from "../../../shared/schema";
 
 export default function ProjectEditContacts() {
   const { id } = useParams();

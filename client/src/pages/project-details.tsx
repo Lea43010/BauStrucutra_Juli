@@ -31,7 +31,7 @@ import {
   Trash2
 } from "lucide-react";
 import { Link } from "wouter";
-import type { Project } from "../../shared/schema";
+import type { Project } from "../../../shared/schema";
 
 export default function ProjectDetails() {
   const { id } = useParams();

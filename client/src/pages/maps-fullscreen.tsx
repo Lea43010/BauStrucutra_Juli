@@ -9,7 +9,7 @@ import { ArrowLeft, MapPin, Ruler, Layers, Download, Trash2, Plus, Save } from "
 import { Link } from "wouter";
 import { Wrapper, Status } from "@googlemaps/react-wrapper";
 import { DirectAddressSearch } from "../components/maps/direct-address-search";
-import type { Project } from "../../shared/schema";
+import type { Project } from "../../../shared/schema";
 
 // Interfaces
 interface CustomMarker {

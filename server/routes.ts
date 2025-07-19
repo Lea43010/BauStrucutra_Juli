@@ -7,6 +7,16 @@ import { z } from "zod";
 import { emailService } from "./emailService";
 
 // SFTP-Account-Erstellung für neuen Benutzer
+// Helper function to generate secure password
+function generateSecurePassword(): string {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
+  let result = '';
+  for (let i = 0; i < 12; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+}
+
 async function createSftpAccountForUser(userId: string) {
   const sftpUsername = `baustructura_user_${userId}`;
   const sftpPassword = generateSecurePassword();
@@ -152,7 +162,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Echter Benutzer gefunden - echte SFTP-Einrichtung
       const { SftpAutoSetup } = await import('./sftpAutoSetup');
-      const result = await SftpAutoSetup.setupSftpForUser(targetUser.id, 'basic');
+      const result = await SftpAutoSetup.setupSftpForUser(targetUser.id);
 
       if (result.success) {
         // E-Mail mit SFTP-Zugangsdaten senden
@@ -249,7 +259,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(updatedUser);
     } catch (error) {
       console.error("Error updating profile:", error);
-      res.status(500).json({ message: "Failed to update profile", error: error.message });
+      res.status(500).json({ message: "Failed to update profile", error: error instanceof Error ? error.message : 'Unknown error' });
     }
   });
 
@@ -315,7 +325,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Verify current password
-      const isCurrentPasswordValid = await comparePasswords(currentPassword, user.password);
+      const isCurrentPasswordValid = await comparePasswords(currentPassword, user.password || '');
       if (!isCurrentPasswordValid) {
         return res.status(400).json({ message: "Current password is incorrect" });
       }
@@ -580,7 +590,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/projects/:id", createSecurityChain([isAuthenticated]), async (req: SecurityRequest, res) => {
+  app.get("/api/projects/:id", isAuthenticated, async (req: SecurityRequest, res) => {
     try {
       const projectId = parseInt(req.params.id);
       const { userId, isAdmin } = req.securityContext || {};
@@ -656,7 +666,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Validierungsfehler", errors: error.errors });
       }
       console.error("Error creating project:", error);
-      console.log(`💥 PROJECT CREATE ERROR: UserID: ${req.user?.id}, Error: ${error.message}`);
+      console.log(`💥 PROJECT CREATE ERROR: UserID: ${req.user?.id}, Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
       res.status(500).json({ message: "Das Projekt konnte nicht erstellt werden" });
     }
   });
@@ -682,7 +692,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           erstellt_von: 'System',
           erstellt_am: project.createdAt || new Date().toISOString(),
           aufgaben_gesamt: 1,
-          aufgaben_erledigt: project.completionPercentage > 50 ? 1 : 0,
+          aufgaben_erledigt: (project.completionPercentage || 0) > 50 ? 1 : 0,
           fortschritt: project.completionPercentage || 0,
           beschreibung: project.description
         },
@@ -898,7 +908,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(201).json(company);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        console.log(`❌ COMPANY CREATE: Validation error - UserID: ${userId}`, error.errors);
+        console.log(`❌ COMPANY CREATE: Validation error - UserID: ${req.user?.id}`, error.errors);
         return res.status(400).json({ message: "Invalid company data", errors: error.errors });
       }
       console.error("Error creating company:", error);
@@ -2298,7 +2308,7 @@ Diese E-Mail wurde automatisch generiert vom Bau-Structura Hochwasserschutz-Syst
         to: testEmail,
         firstName: 'Test',
         role: 'user',
-        id: 'test_id_123'
+        userId: 'test_id_123'
       });
 
       res.json({ 

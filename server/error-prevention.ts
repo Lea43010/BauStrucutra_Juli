@@ -173,7 +173,7 @@ export class ErrorPreventionSystem {
         // Fehlgeschlagenen Auto-Fix auch loggen
         errorLearningSystem.logError({
           type: 'RUNTIME',
-          message: `Auto-Fix failed: ${error.message}`,
+          message: `Auto-Fix failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
           file: 'error-prevention.ts',
           context: `Failed to apply auto-fix: ${fix}`
         });

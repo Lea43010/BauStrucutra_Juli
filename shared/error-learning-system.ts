@@ -37,7 +37,7 @@ export interface ErrorPattern {
 export class IntelligentErrorLogger {
   private static instance: IntelligentErrorLogger;
   private errorHistory: ErrorEntry[] = [];
-  private patterns: ErrorPattern[] = [];
+  public patterns: ErrorPattern[] = [];
   private learningRules: Map<string, any> = new Map();
 
   constructor() {
@@ -186,7 +186,7 @@ export class IntelligentErrorLogger {
       'SECURITY': () => 'Sicherheitslücke durch ungeschützte Routes oder fehlende Authentifizierung'
     };
 
-    return patterns[error.type]?.() || 'Unbekannte Fehlerursache';
+    return patterns[error.type as keyof typeof patterns]?.() || 'Unbekannte Fehlerursache';
   }
 
   /**
@@ -435,7 +435,7 @@ export class IntelligentErrorLogger {
       'SECURITY': 'ProtectedRoute Authentication Check'
     };
     
-    return checks[errorEntry.errorType] || 'Allgemeiner Validierungs-Check';
+    return checks[errorEntry.errorType as keyof typeof checks] || 'Allgemeiner Validierungs-Check';
   }
 
   /**
@@ -536,10 +536,10 @@ export function withErrorLearning(target: any, propertyName: string, descriptor:
     } catch (error) {
       const errorId = errorLearningSystem.logError({
         type: 'RUNTIME',
-        message: error.message,
+        message: error instanceof Error ? error.message : String(error),
         file: `${target.constructor.name}.${propertyName}`,
         context: `Method execution: ${propertyName}`,
-        stackTrace: error.stack
+        stackTrace: error instanceof Error ? error.stack : undefined
       });
 
       // Bekannte Lösung anwenden falls verfügbar

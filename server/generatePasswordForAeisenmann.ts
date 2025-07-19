@@ -65,7 +65,7 @@ async function updatePasswordAndSendEmail(user: any, newPassword: string, hashed
     
     // E-Mail mit neuem Passwort senden
     await emailService.sendPasswordResetEmail({
-      email: user.email || 'aeisenmann@lohr.de',
+      // email: user.email || 'aeisenmann@lohr.de',
       firstName: user.firstName || 'A. Eisenmann',
       newPassword: newPassword,
       loginUrl: 'https://bau-structura.com/auth'
