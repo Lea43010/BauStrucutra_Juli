@@ -5,6 +5,7 @@ import { setupLocalAuth, isAuthenticated, hashPassword, comparePasswords } from 
 import { insertProjectSchema, insertCustomerSchema, insertCompanySchema, insertPersonSchema } from "@shared/schema";
 import { z } from "zod";
 import { emailService } from "./emailService";
+import type { SecurityRequest, SecurityResponse } from "./types";
 
 // SFTP-Account-Erstellung für neuen Benutzer
 // Helper function to generate secure password
@@ -58,8 +59,7 @@ import {
   validateResourceOwnership, 
   requireAdmin, 
   requireManagerOrAdmin,
-  enforceUserIsolation,
-  type SecurityRequest 
+  enforceUserIsolation
 } from './security-middleware';
 import { registerTrialAdminRoutes } from './admin-trial-api';
 import { onLicenseActivated, onLicenseCancelled } from './sftpAutoSetup';
@@ -171,7 +171,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           firstName: targetUser.firstName || username,
           sftpHost: result.host || '128.140.82.20',
           sftpPort: result.port || 22,
-          sftpUsername: result.username,
+          sftpUsername: result.username || '',
           sftpPassword: result.password || 'TempPassword',
           sftpPath: result.path || `/var/ftp/${username}/uploads/`,
           licenseType: 'basic',
@@ -590,7 +590,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/projects/:id", isAuthenticated, async (req: SecurityRequest, res) => {
+  app.get("/api/projects/:id", isAuthenticated, async (req: any, res: any) => {
     try {
       const projectId = parseInt(req.params.id);
       const { userId, isAdmin } = req.securityContext || {};
@@ -613,7 +613,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/projects", isAuthenticated, async (req: SecurityRequest, res) => {
+  app.post("/api/projects", isAuthenticated, async (req: any, res: any) => {
     try {
       console.log(`🔍 PROJECT CREATE REQUEST: User: ${req.user?.id}, Session: ${req.sessionID}`);
       
@@ -891,7 +891,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Insufficient permissions" });
       }
       
-      console.log(`✅ COMPANY CREATE: Access granted - UserID: ${userId}, Role: ${user.role}`);
+      console.log(`✅ COMPANY CREATE: Access granted - UserID: ${userId}, Role: ${user?.role}`);
       
       // Add user_id to company data for user isolation
       const companyDataWithUserId = {
@@ -2308,7 +2308,7 @@ Diese E-Mail wurde automatisch generiert vom Bau-Structura Hochwasserschutz-Syst
         to: testEmail,
         firstName: 'Test',
         role: 'user',
-        userId: 'test_id_123'
+        // userId: 'test_id_123'
       });
 
       res.json({ 

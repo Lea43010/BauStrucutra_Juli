@@ -123,7 +123,11 @@ export async function setupLocalAuth(app: Express) {
           }
 
           console.log('✅ Login successful for:', user.email);
-          return done(null, user);
+          return done(null, {
+            id: user.id,
+            email: user.email || undefined,
+            role: user.role
+          });
         } catch (error) {
           console.error('❌ Login error:', error);
           return done(error);
@@ -146,7 +150,11 @@ export async function setupLocalAuth(app: Express) {
         return done(null, false);
       }
       console.log('✅ User successfully deserialized:', user.email);
-      done(null, user);
+      done(null, {
+        id: user.id,
+        email: user.email || undefined,
+        role: user.role
+      });
     } catch (error) {
       console.error("❌ Error deserializing user:", error);
       done(null, false);
@@ -267,7 +275,7 @@ export async function setupLocalAuth(app: Express) {
               to: email,
               firstName: firstName,
               role: "user",
-              userId: user.id
+              // userId: user.id
             });
             
             console.log(`✅ Willkommens-E-Mail erfolgreich versendet (Versuch ${attempt}):`, emailResponse.messageId);
@@ -298,7 +306,11 @@ export async function setupLocalAuth(app: Express) {
       }
 
       // Log user in
-      req.login(user, (err) => {
+      req.login({
+        id: user.id,
+        email: user.email || undefined,
+        role: user.role
+      }, (err) => {
         if (err) {
           return res.status(500).json({ message: "Anmeldung nach Registrierung fehlgeschlagen" });
         }

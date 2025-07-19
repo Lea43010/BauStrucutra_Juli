@@ -210,9 +210,9 @@ export function errorLearningAnalytics() {
       req.errorContext = {
         ...req.errorContext,
         // userAgent,
-        referer,
-        isMobile,
-        ip: req.ip
+        // referer,
+        // isMobile,
+        // ip: req.ip
       };
     }
 

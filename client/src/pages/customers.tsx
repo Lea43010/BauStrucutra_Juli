@@ -51,7 +51,7 @@ export default function Customers() {
     queryKey: ["/api/customers"],
   });
 
-  const { data: contacts = [] } = useQuery({
+  const { data: contacts = [] } = useQuery<any[]>({
     queryKey: ["/api/customers", selectedCustomer?.id, "contacts"],
     enabled: !!selectedCustomer?.id,
   });

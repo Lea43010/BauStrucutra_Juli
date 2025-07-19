@@ -115,7 +115,7 @@ export default function Admin() {
   });
 
   // Fetch users list
-  const { data: users = [] } = useQuery({
+  const { data: users = [] } = useQuery<any[]>({
     queryKey: ["/api/admin/users"],
     enabled: isAuthenticated && (user as any)?.role === 'admin'
   });

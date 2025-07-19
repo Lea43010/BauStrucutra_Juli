@@ -204,12 +204,15 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
           />
           
           {/* Loading indicator */}
-          {isLoading && (
+          {isLoading ? (
             <Loader2 className="absolute right-3 top-3 h-4 w-4 animate-spin text-gray-400" />
-          )}
+          ) : null}
           
           {/* Debug info */}
-          {console.log('Render state:', { showSuggestions, predictionsLength: predictions.length, query, isLoading })}
+          {(() => {
+            console.log('Render state:', { showSuggestions, predictionsLength: predictions.length, query, isLoading });
+            return null;
+          })()}
           
           {/* Suggestions dropdown */}
           {showSuggestions && predictions.length > 0 && (

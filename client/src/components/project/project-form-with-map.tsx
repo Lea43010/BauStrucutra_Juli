@@ -74,10 +74,7 @@ export function ProjectFormWithMap({ customers, onSuccess, initialData }: Projec
 
   const createProject = useMutation({
     mutationFn: async (data: ProjectFormData) => {
-      const response = await apiRequest("/api/projects", {
-        method: "POST",
-        body: JSON.stringify(data),
-      });
+      const response = await apiRequest("/api/projects", "POST", data);
       return response.json();
     },
     onSuccess: () => {
@@ -187,7 +184,8 @@ export function ProjectFormWithMap({ customers, onSuccess, initialData }: Projec
                       <Textarea 
                         placeholder="Projektbeschreibung eingeben..." 
                         className="min-h-[100px]"
-                        {...field} 
+                        {...field}
+                        value={field.value || ''}
                       />
                     </FormControl>
                     <FormMessage />

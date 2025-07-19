@@ -52,8 +52,8 @@ export default function ProjectEditSimple() {
   });
 
   const { data: companyContacts = [] } = useQuery({
-    queryKey: [`/api/companies/${project?.companyId || 1}/contacts`],
-    enabled: !!project?.companyId,
+    queryKey: [`/api/companies/${project?.customerId || 1}/contacts`],
+    enabled: !!project?.customerId,
   });
 
   useEffect(() => {

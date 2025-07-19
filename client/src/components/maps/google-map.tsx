@@ -90,7 +90,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
   return <div ref={ref} style={style} />;
 };
 
-const render = (status: Status) => {
+const render = (status: Status): React.ReactElement => {
   switch (status) {
     case Status.LOADING:
       return (
@@ -113,7 +113,9 @@ const render = (status: Status) => {
         </div>
       );
     case Status.SUCCESS:
-      return null;
+      return <div></div>;
+    default:
+      return <div></div>;
   }
 };
 

@@ -187,7 +187,7 @@ export default function FloodProtection() {
       });
 
       // Query invalidieren um die Liste zu aktualisieren
-      queryClient.invalidateQueries(['/api/flood/checklists']);
+      queryClient.invalidateQueries({ queryKey: ['/api/flood/checklists'] });
 
     } catch (error) {
       console.error("Fehler beim Erstellen der Checkliste:", error);
