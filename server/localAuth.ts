@@ -205,10 +205,10 @@ export async function setupLocalAuth(app: Express) {
       // Hash password
       const hashedPassword = await hashPassword(password);
 
-      // Create user with privacy consent and 30-day trial
+      // Create user with privacy consent and 14-day trial
       const trialStartDate = new Date();
       const trialEndDate = new Date();
-      trialEndDate.setDate(trialEndDate.getDate() + 30); // 30 Tage Testzeitraum
+      trialEndDate.setDate(trialEndDate.getDate() + 14); // 14 Tage Testzeitraum
 
       const user = await storage.upsertUser({
         id: `local_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -222,7 +222,7 @@ export async function setupLocalAuth(app: Express) {
         trialStartDate,
         trialEndDate,
         paymentStatus: "trial",
-        trialReminderSent: false
+        trialReminderSent: 0
       });
 
       console.log(`✅ Neuer Benutzer registriert: ${email} (DSGVO-Einverständnis: ${privacyConsent})`);

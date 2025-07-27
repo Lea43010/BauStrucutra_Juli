@@ -60,7 +60,7 @@ export const users = pgTable("users", {
   // Testzeitraum und Lizenz-Management
   trialStartDate: timestamp("trial_start_date").defaultNow(),
   trialEndDate: timestamp("trial_end_date"),
-  trialReminderSent: boolean("trial_reminder_sent").default(false),
+  trialReminderSent: integer("trial_reminder_sent").default(0),
   // Stripe Payment & License Management
   stripeCustomerId: varchar("stripe_customer_id"),
   licenseType: licenseTypeEnum("license_type").default("basic"),

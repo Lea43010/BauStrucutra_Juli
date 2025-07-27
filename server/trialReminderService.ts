@@ -1,16 +1,17 @@
 /**
  * Testzeitraum-Benachrichtigungsservice für Bau-Structura
- * Automatische E-Mail-Erinnerungen für ablaufende Testversionen
+ * Automatische E-Mail- und Push-Erinnerungen für ablaufende Testversionen
  */
 
 import { storage } from "./storage";
 import { emailService } from "./emailService";
+import { pushService } from "./pushService";
 
 export class TrialReminderService {
   
   /**
    * Überprüft alle Benutzer auf ablaufende Testversionen
-   * Sendet E-Mail-Erinnerungen nach 14 Tagen (bei 30-Tage-Testzeitraum)
+   * Sendet Erinnerungen an Tag 7 und Tag 12 des 14-tägigen Testzeitraums
    */
   async checkTrialExpirations(): Promise<{
     checked: number;
@@ -26,10 +27,10 @@ export class TrialReminderService {
     try {
       // Alle Benutzer mit aktivem Testzeitraum abrufen
       const users = await storage.getAllUsers();
-      const trialUsers = users.filter(user => 
-        user.paymentStatus === "trial" && 
-        user.trialEndDate && 
-        !user.trialReminderSent
+      const trialUsers = users.filter(user =>
+        user.paymentStatus === "trial" &&
+        user.trialEndDate &&
+        (user.trialReminderSent ?? 0) < 12
       );
 
       results.checked = trialUsers.length;
@@ -41,18 +42,29 @@ export class TrialReminderService {
           const trialEnd = new Date(user.trialEndDate!);
           const daysUntilExpiry = Math.ceil((trialEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
 
-          // E-Mail senden wenn Benutzer 14 Tage oder mehr im Testzeitraum ist (bei 30-Tage-Testzeitraum)
           const daysSinceStart = Math.floor((now.getTime() - trialStart.getTime()) / (1000 * 60 * 60 * 24));
-          if (daysSinceStart >= 14 && daysUntilExpiry > 0) {
-            await this.sendTrialReminderEmail(user, daysUntilExpiry);
-            
-            // Benutzer als "Erinnerung gesendet" markieren
-            await storage.updateUser(user.id, {
-              trialReminderSent: true
-            });
+          const lastReminder = user.trialReminderSent ?? 0;
 
+          if (daysSinceStart >= 7 && lastReminder < 7 && daysUntilExpiry > 0) {
+            await this.sendTrialReminderEmail(user, daysUntilExpiry);
+            await pushService.sendPush(user.pushSubscription, {
+              title: 'Testzeitraum Erinnerung',
+              body: `Ihr Testzeitraum endet in ${daysUntilExpiry} Tagen.`
+            });
+            await storage.updateUser(user.id, { trialReminderSent: 7 });
             results.remindersSent++;
-            console.log(`✅ Testzeitraum-Erinnerung gesendet an ${user.email} (${daysUntilExpiry} Tage verbleibend)`);
+            console.log(`✅ Testzeitraum-Erinnerung (Tag 7) gesendet an ${user.email} (${daysUntilExpiry} Tage verbleibend)`);
+          }
+
+          if (daysSinceStart >= 12 && lastReminder < 12 && daysUntilExpiry > 0) {
+            await this.sendTrialReminderEmail(user, daysUntilExpiry);
+            await pushService.sendPush(user.pushSubscription, {
+              title: 'Testzeitraum Erinnerung',
+              body: `Ihr Testzeitraum endet in ${daysUntilExpiry} Tagen.`
+            });
+            await storage.updateUser(user.id, { trialReminderSent: 12 });
+            results.remindersSent++;
+            console.log(`✅ Testzeitraum-Erinnerung (Tag 12) gesendet an ${user.email} (${daysUntilExpiry} Tage verbleibend)`);
           }
 
           // Account deaktivieren wenn Testzeitraum abgelaufen

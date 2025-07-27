@@ -889,7 +889,7 @@ Bau-Structura Support Team`;
                 <div class="warning-box">
                     <h3 style="color: #92400e; margin-top: 0;">🚨 Wichtige Erinnerung</h3>
                     <div class="countdown">${data.daysRemaining} Tage verbleibend</div>
-                    <p><strong>Ihr kostenloser 30-Tage-Testzeitraum endet am ${formattedEndDate}.</strong></p>
+                    <p><strong>Ihr kostenloser 14-Tage-Testzeitraum endet am ${formattedEndDate}.</strong></p>
                     <p>Um Bau-Structura weiterhin nutzen zu können, wählen Sie bitte eine unserer Lizenzoptionen:</p>
                 </div>
                 
@@ -998,7 +998,7 @@ Hallo ${data.firstName},
 
 ${data.daysRemaining} Tage verbleibend
 
-Ihr kostenloser 30-Tage-Testzeitraum endet am ${formattedEndDate}.
+Ihr kostenloser 14-Tage-Testzeitraum endet am ${formattedEndDate}.
 
 Um Bau-Structura weiterhin nutzen zu können, wählen Sie bitte eine unserer Lizenzoptionen:
 
