@@ -215,10 +215,24 @@ export default function AuthPage() {
       });
       return;
     }
-    if (registerForm.password.length < 6) {
+    if (registerForm.password.length < 8) {
       toast({
         title: "Fehler",
-        description: "Das Passwort muss mindestens 6 Zeichen lang sein.",
+        description: "Das Passwort muss mindestens 8 Zeichen lang sein.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Enhanced password validation
+    const hasUpperCase = /[A-Z]/.test(registerForm.password);
+    const hasLowerCase = /[a-z]/.test(registerForm.password);
+    const hasNumbers = /\d/.test(registerForm.password);
+    
+    if (!hasUpperCase || !hasLowerCase || !hasNumbers) {
+      toast({
+        title: "Fehler",
+        description: "Das Passwort muss Groß- und Kleinbuchstaben sowie Zahlen enthalten.",
         variant: "destructive",
       });
       return;
