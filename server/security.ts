@@ -12,9 +12,7 @@ export const corsOptions = {
       'https://www.bau-structura.de',
       'https://bau-structura.de',
       'https://www.bau-structura.com',
-      'https://bau-structura.com',
-      'https://baustructura.replit.app',
-      'https://baustructura-final.replit.app'
+      'https://bau-structura.com'
     ];
     
     // Development domains
@@ -25,11 +23,6 @@ export const corsOptions = {
         'http://127.0.0.1:5000',
         'http://127.0.0.1:3000'
       );
-    }
-    
-    // Replit domains (dynamic)
-    if (origin.includes('.replit.app') || origin.includes('.replit.dev')) {
-      return callback(null, true);
     }
     
     if (allowedOrigins.indexOf(origin) !== -1) {

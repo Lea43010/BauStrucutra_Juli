@@ -23,7 +23,6 @@ export async function sendPasswordEmailToAeisenmann(): Promise<void> {
     console.log(`   📧 E-Mail: aeisenmann@lohr.de`);
     console.log(`   🔐 Passwort: ${newPassword}`);
     console.log(`   🔗 Login-URL: https://bau-structura.com/auth`);
-    console.log(`   🌐 Alternative Login: https://baustructura.replit.app/auth`);
     
   } catch (error) {
     console.error('❌ E-Mail-Versand fehlgeschlagen:', error);
