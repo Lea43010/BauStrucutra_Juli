@@ -387,46 +387,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const path = req.query.path || user.sftpPath || '/';
       
-      // Mock SFTP file listing for demonstration - in production use ssh2-sftp-client
-      const mockFiles = [
-        {
-          name: 'projects',
-          type: 'directory',
-          size: 0,
-          modified: new Date('2025-06-01'),
-          permissions: 'drwxr-xr-x'
-        },
-        {
-          name: 'documents',
-          type: 'directory', 
-          size: 0,
-          modified: new Date('2025-06-15'),
-          permissions: 'drwxr-xr-x'
-        },
-        {
-          name: 'projekt_muenchen_bahnhof.pdf',
-          type: 'file',
-          size: 2457600,
-          modified: new Date('2025-06-20'),
-          permissions: '-rw-r--r--'
-        },
-        {
-          name: 'checkliste_hochwasser.xlsx',
-          type: 'file',
-          size: 524288,
-          modified: new Date('2025-06-18'),
-          permissions: '-rw-r--r--'
-        },
-        {
-          name: 'backup_2025-06-29.zip',
-          type: 'file',
-          size: 15728640,
-          modified: new Date('2025-06-29'),
-          permissions: '-rw-r--r--'
-        }
-      ];
+      // Import SFTP service
+      const { SftpService } = await import('./sftpService');
+      
+      // Get actual files from SFTP server
+      const files = await SftpService.listFiles(userId, path);
 
-      res.json({ path, files: mockFiles });
+      res.json({ path, files });
     } catch (error) {
       console.error("SFTP list files failed:", error);
       res.status(500).json({ 
@@ -445,18 +412,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "SFTP upload requires manager or admin role" });
       }
       
-      const { fileName, path, fileSize } = req.body;
+      const { fileName, path, fileSize, fileData } = req.body;
       
       if (!fileName) {
         return res.status(400).json({ message: "File name is required" });
       }
 
-      // Mock upload response - in production handle actual file upload via SFTP
+      if (!fileData) {
+        return res.status(400).json({ message: "File data is required" });
+      }
+
+      // Import SFTP service
+      const { SftpService } = await import('./sftpService');
+      
+      // Create temporary file path
+      const tempDir = '/tmp';
+      const tempFilePath = `${tempDir}/${fileName}`;
+      const remotePath = `${path || user?.sftpPath || '/'}/${fileName}`;
+      
+      // Write file data to temporary file
+      const fs = await import('fs');
+      const buffer = Buffer.from(fileData, 'base64');
+      fs.writeFileSync(tempFilePath, buffer);
+      
+      // Upload file via SFTP
+      await SftpService.uploadFile(userId, tempFilePath, remotePath);
+      
+      // Clean up temporary file
+      fs.unlinkSync(tempFilePath);
+      
       const uploadResult = {
         success: true,
         fileName,
-        path: path || user?.sftpPath || '/',
-        size: fileSize || 0,
+        path: remotePath,
+        size: fileSize || buffer.length,
         uploadedAt: new Date(),
         message: "File uploaded successfully"
       };
@@ -482,8 +471,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const fileName = req.params.fileName;
       const path = req.query.path || user?.sftpPath || '/';
+      const fullPath = `${path}/${fileName}`;
       
-      // Mock delete response - in production delete the actual file via SFTP
+      // Import SFTP service
+      const { SftpService } = await import('./sftpService');
+      
+      // Delete file via SFTP
+      await SftpService.deleteFile(userId, fullPath);
+      
       res.json({ 
         success: true, 
         message: `File ${fileName} deleted successfully from ${path}`,
@@ -493,6 +488,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("SFTP delete failed:", error);
       res.status(500).json({ 
         message: "Failed to delete file", 
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  app.get('/api/sftp/download/:fileName', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const user = await storage.getUser(userId);
+      
+      if (user?.role === "user") {
+        return res.status(403).json({ message: "SFTP download requires manager or admin role" });
+      }
+      
+      const fileName = req.params.fileName;
+      const path = req.query.path || user?.sftpPath || '/';
+      const fullPath = `${path}/${fileName}`;
+      
+      // Import SFTP service
+      const { SftpService } = await import('./sftpService');
+      
+      // Create temporary file path
+      const tempDir = '/tmp';
+      const tempFilePath = `${tempDir}/${fileName}`;
+      
+      // Download file via SFTP
+      await SftpService.downloadFile(userId, fullPath, tempFilePath);
+      
+      // Send file to client
+      res.download(tempFilePath, fileName, (err) => {
+        // Clean up temporary file
+        const fs = require('fs');
+        if (fs.existsSync(tempFilePath)) {
+          fs.unlinkSync(tempFilePath);
+        }
+      });
+    } catch (error) {
+      console.error("SFTP download failed:", error);
+      res.status(500).json({ 
+        message: "Failed to download file", 
         error: error instanceof Error ? error.message : 'Unknown error'
       });
     }
@@ -513,11 +548,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Folder name is required" });
       }
 
-      // Mock folder creation response - in production create actual folder via SFTP
+      // Import SFTP service
+      const { SftpService } = await import('./sftpService');
+      
+      const fullPath = `${path || user?.sftpPath || '/'}/${folderName}`;
+      
+      // Create folder via SFTP
+      await SftpService.createDirectory(userId, fullPath);
+      
       res.json({ 
         success: true, 
         message: `Folder ${folderName} created successfully`,
-        path: `${path || user?.sftpPath || '/'}/${folderName}`,
+        path: fullPath,
         createdAt: new Date()
       });
     } catch (error) {

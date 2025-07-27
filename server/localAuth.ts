@@ -58,24 +58,32 @@ async function comparePasswords(supplied: string, stored: string): Promise<boole
 }
 
 export async function setupLocalAuth(app: Express) {
-  // Session setup
+  // Session setup with improved error handling
   const sessionTtl = 7 * 24 * 60 * 60 * 1000; // 1 week
-  const pgStore = connectPg(session);
-  const sessionStore = new pgStore({
-    conString: process.env.DATABASE_URL,
-    createTableIfMissing: true, // Allow creating table if missing
-    ttl: sessionTtl,
-    tableName: "sessions",
-  });
+  
+  let sessionStore;
+  try {
+    const pgStore = connectPg(session);
+    sessionStore = new pgStore({
+      conString: process.env.DATABASE_URL,
+      createTableIfMissing: true,
+      ttl: sessionTtl,
+      tableName: "sessions",
+    });
 
-  // Test session store connection
-  console.log('🔍 Testing session store connection...');
-  sessionStore.on('connect', () => {
-    console.log('✅ Session store connected successfully');
-  });
-  sessionStore.on('error', (err) => {
-    console.error('❌ Session store error:', err);
-  });
+    // Test session store connection
+    console.log('🔍 Testing session store connection...');
+    sessionStore.on('connect', () => {
+      console.log('✅ Session store connected successfully');
+    });
+    sessionStore.on('error', (err) => {
+      console.error('❌ Session store error:', err);
+    });
+  } catch (error) {
+    console.error('❌ Failed to initialize session store:', error);
+    // Fallback to memory store for development
+    sessionStore = new (require('memorystore'))(session);
+  }
 
   const sessionSettings: session.SessionOptions = {
     secret: process.env.SESSION_SECRET || "default-secret-change-in-production",
@@ -84,12 +92,12 @@ export async function setupLocalAuth(app: Express) {
     store: sessionStore,
     cookie: {
       httpOnly: true,
-      secure: false, // Set to true in production with HTTPS
+      secure: process.env.NODE_ENV === 'production', // Secure in production
       maxAge: sessionTtl,
-      sameSite: 'lax',
+      sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
       path: '/',
     },
-    name: 'connect.sid' // Ensure consistent session name
+    name: 'connect.sid'
   };
 
   app.use(session(sessionSettings));
@@ -197,9 +205,26 @@ export async function setupLocalAuth(app: Express) {
         return res.status(400).json({ message: "Diese E-Mail-Adresse existiert bereits im System" });
       }
 
-      // Validate password strength
-      if (password.length < 6) {
-        return res.status(400).json({ message: "Passwort muss mindestens 6 Zeichen lang sein" });
+      // Enhanced password validation
+      if (password.length < 8) {
+        return res.status(400).json({ message: "Passwort muss mindestens 8 Zeichen lang sein" });
+      }
+      
+      // Check for complexity requirements
+      const hasUpperCase = /[A-Z]/.test(password);
+      const hasLowerCase = /[a-z]/.test(password);
+      const hasNumbers = /\d/.test(password);
+      const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+      
+      if (!hasUpperCase || !hasLowerCase || !hasNumbers) {
+        return res.status(400).json({ 
+          message: "Passwort muss Groß- und Kleinbuchstaben sowie Zahlen enthalten" 
+        });
+      }
+      
+      // Check if passwords match
+      if (password !== req.body.confirmPassword) {
+        return res.status(400).json({ message: "Passwörter stimmen nicht überein" });
       }
 
       // Hash password

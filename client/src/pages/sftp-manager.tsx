@@ -225,11 +225,19 @@ export default function SftpManager() {
   const handleUpload = () => {
     if (!selectedFile) return;
     
-    uploadMutation.mutate({
-      fileName: selectedFile.name,
-      path: currentPath,
-      fileSize: selectedFile.size
-    });
+    // Convert file to base64
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64Data = (reader.result as string).split(',')[1]; // Remove data URL prefix
+      
+      uploadMutation.mutate({
+        fileName: selectedFile.name,
+        path: currentPath,
+        fileSize: selectedFile.size,
+        fileData: base64Data
+      });
+    };
+    reader.readAsDataURL(selectedFile);
   };
 
   const handleCreateFolder = () => {
@@ -497,9 +505,18 @@ export default function SftpManager() {
                             variant="outline"
                             size="sm"
                             onClick={() => {
+                              // Create download link
+                              const downloadUrl = `/api/sftp/download/${encodeURIComponent(file.name)}?path=${encodeURIComponent(currentPath)}`;
+                              const link = document.createElement('a');
+                              link.href = downloadUrl;
+                              link.download = file.name;
+                              document.body.appendChild(link);
+                              link.click();
+                              document.body.removeChild(link);
+                              
                               toast({
-                                title: "Download",
-                                description: `Download von ${file.name} wird gestartet...`,
+                                title: "Download gestartet",
+                                description: `${file.name} wird heruntergeladen...`,
                               });
                             }}
                           >
