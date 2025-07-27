@@ -5,6 +5,7 @@
 
 import { storage } from "./storage";
 import { emailService } from "./emailService";
+import { pushService } from "./pushService";
 
 export class TrialReminderService {
   
@@ -84,12 +85,18 @@ export class TrialReminderService {
    */
   private async sendTrialReminderEmail(user: any, daysRemaining: number): Promise<void> {
     const subject = `🚨 Ihr Bau-Structura Testzeitraum läuft in ${daysRemaining} Tagen ab`;
-    
+
     await emailService.sendTrialReminderEmail({
       to: user.email,
       firstName: user.firstName,
       daysRemaining,
       trialEndDate: user.trialEndDate
+    });
+
+    // Matching push notification
+    await pushService.sendToUser(user.id, {
+      title: 'Testzeitraum läuft ab',
+      body: `Ihre Testversion endet in ${daysRemaining} Tagen.`
     });
   }
 

@@ -244,6 +244,14 @@ export const loginLog = pgTable("login_log", {
   sessionDuration: integer("session_duration"),
 });
 
+// Web push subscriptions
+export const pushSubscriptions = pgTable("push_subscriptions", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").references(() => users.id).notNull(),
+  subscription: jsonb("subscription").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // AI log table
 export const aiLog = pgTable("ai_log", {
   id: serial("id").primaryKey(),
@@ -318,6 +326,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   supportTickets: many(supportTickets),
   loginLogs: many(loginLog),
   aiLogs: many(aiLog),
+  pushSubscriptions: many(pushSubscriptions),
   projectRoles: many(projectRoles),
 }));
 
@@ -477,6 +486,11 @@ export const insertProjectRoleSchema = createInsertSchema(projectRoles).omit({
   assignedAt: true,
 });
 
+export const insertPushSubscriptionSchema = createInsertSchema(pushSubscriptions).omit({
+  id: true,
+  createdAt: true,
+});
+
 // Types
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
@@ -520,3 +534,6 @@ export type InsertCompanyContact = z.infer<typeof insertCompanyContactSchema>;
 
 export type ProjectRole = typeof projectRoles.$inferSelect;
 export type InsertProjectRole = z.infer<typeof insertProjectRoleSchema>;
+
+export type PushSubscriptionRecord = typeof pushSubscriptions.$inferSelect;
+export type InsertPushSubscription = z.infer<typeof insertPushSubscriptionSchema>;

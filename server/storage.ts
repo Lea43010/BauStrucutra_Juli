@@ -12,6 +12,7 @@ import {
   aiLog,
   customerContacts,
   companyContacts,
+  pushSubscriptions,
   type User,
   type UpsertUser,
   type Project,
@@ -38,6 +39,8 @@ import {
   type InsertCustomerContact,
   type CompanyContact,
   type InsertCompanyContact,
+  type PushSubscriptionRecord,
+  type InsertPushSubscription,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, sql } from "drizzle-orm";
@@ -120,6 +123,11 @@ export interface IStorage {
   createCompanyContact(contact: InsertCompanyContact): Promise<CompanyContact>;
   updateCompanyContact(id: number, contact: Partial<InsertCompanyContact>): Promise<CompanyContact>;
   deleteCompanyContact(id: number): Promise<void>;
+
+  // Push subscription operations
+  createPushSubscription(sub: InsertPushSubscription): Promise<PushSubscriptionRecord>;
+  getPushSubscriptionsByUser(userId: string): Promise<PushSubscriptionRecord[]>;
+  deletePushSubscription(id: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -582,6 +590,19 @@ export class DatabaseStorage implements IStorage {
 
   async deleteCompanyContact(id: number): Promise<void> {
     await db.delete(companyContacts).where(eq(companyContacts.id, id));
+  }
+
+  async createPushSubscription(sub: InsertPushSubscription): Promise<PushSubscriptionRecord> {
+    const [created] = await db.insert(pushSubscriptions).values(sub).returning();
+    return created;
+  }
+
+  async getPushSubscriptionsByUser(userId: string): Promise<PushSubscriptionRecord[]> {
+    return await db.select().from(pushSubscriptions).where(eq(pushSubscriptions.userId, userId));
+  }
+
+  async deletePushSubscription(id: number): Promise<void> {
+    await db.delete(pushSubscriptions).where(eq(pushSubscriptions.id, id));
   }
 
   async getUserProjectRoles(userId: string): Promise<any[]> {

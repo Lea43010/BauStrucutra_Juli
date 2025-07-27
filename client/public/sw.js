@@ -216,26 +216,22 @@ async function processOfflineQueue() {
 // Handle push notifications (future feature)
 self.addEventListener('push', (event) => {
   console.log('[SW] Push notification received');
-  
+
+  const data = event.data ? event.data.json() : {};
+  const title = data.title || 'Bau-Structura';
   const options = {
-    body: event.data ? event.data.text() : 'Neue Benachrichtigung',
+    body: data.body || 'Neue Benachrichtigung',
     icon: '/icons/icon-192x192.svg',
     badge: '/icons/icon-192x192.svg',
     tag: 'bau-structura-notification',
     actions: [
-      {
-        action: 'open',
-        title: 'Öffnen'
-      },
-      {
-        action: 'close',
-        title: 'Schließen'
-      }
+      { action: 'open', title: 'Öffnen' },
+      { action: 'close', title: 'Schließen' }
     ]
   };
-  
+
   event.waitUntil(
-    self.registration.showNotification('Bau-Structura', options)
+    self.registration.showNotification(title, options)
   );
 });
 

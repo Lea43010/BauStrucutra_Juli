@@ -54,6 +54,7 @@ import {
 import { registerTrialAdminRoutes } from './admin-trial-api';
 import { onLicenseActivated, onLicenseCancelled } from './sftpAutoSetup';
 import { registerSftpAdminRoutes } from './routes/sftp-admin';
+import { registerPushRoutes } from './routes/push';
 
 if (!process.env.STRIPE_SECRET_KEY) {
   throw new Error('Missing required Stripe secret: STRIPE_SECRET_KEY');
@@ -96,12 +97,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Register Error Learning API routes
   registerErrorLearningRoutes(app);
-  
+
   // Register Trial Admin API routes
   registerTrialAdminRoutes(app);
-  
+
   // Register SFTP Admin API routes
   registerSftpAdminRoutes(app);
+
+  // Register Push Notification routes
+  registerPushRoutes(app);
 
   // Direkte SFTP-Einrichtung für spezifische Benutzer (Admin-Override)
   app.post("/api/admin/direct-sftp-setup", isAuthenticated, async (req: any, res) => {
